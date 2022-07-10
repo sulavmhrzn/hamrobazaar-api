@@ -3,6 +3,11 @@ import typing
 
 import aiohttp
 from aiohttp.typedefs import JSONEncoder
+from slugify import slugify
+
+from .exceptions import CategoryNotFound
+from .types import Category, ChildCategory
+from .utils import GET_ALL_CATEGORY_URL
 
 
 class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
@@ -66,3 +71,61 @@ class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
             except aiohttp.ClientResponseError as e:
                 # Todo: Log messages
                 response.raise_for_status()
+
+    async def _get_categories(self) -> list[Category]:
+        response = await self._make_request("get", GET_ALL_CATEGORY_URL)
+        data = response["data"]
+        result = []
+        child_cats = []
+
+        for parent in data:
+            for child in parent["categories"]:
+                child_cats.append(
+                    ChildCategory(
+                        parent_cat_id=parent["id"],
+                        cat_id=child["id"],
+                        name=child["name"],
+                        slug=slugify(child["name"]),
+                    )
+                )
+            result.append(
+                Category(
+                    id=parent["id"],
+                    name=parent["name"],
+                    slug=slugify(parent["name"]),
+                    child_cat=child_cats,
+                )
+            )
+            # set child_cats to empty list with every iteration
+            # so that every category gets its own child category
+            child_cats = []
+        return result
+
+    async def get_categories(self) -> list[Category]:
+        """Return all categories present in hamrobazaar
+
+        Returns:
+            list[Category]
+        """
+        return await self._get_categories()
+
+    async def _filter_category(self, name: str) -> Category:
+        categories = await self.get_categories()
+        for category in categories:
+            if name.lower() == category.name.lower():
+                return category
+        raise CategoryNotFound("Category not found.")
+
+    async def filter_category(self, name: str) -> Category:
+        """Filter category with name
+
+        Args:
+            name (str): Name of the category
+
+        Raises:
+            CategoryNotFound: If category with that name was not found
+
+        Returns:
+            Category
+        """
+        return await self._filter_category(name)
