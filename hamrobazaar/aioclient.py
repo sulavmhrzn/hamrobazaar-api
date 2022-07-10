@@ -6,8 +6,8 @@ from aiohttp.typedefs import JSONEncoder
 from slugify import slugify
 
 from .exceptions import CategoryNotFound
-from .types import Category, ChildCategory
-from .utils import GET_ALL_CATEGORY_URL
+from .types import Category, ChildCategory, Product
+from .utils import GET_ALL_CATEGORY_URL, MAIN_PAGE_URL, format_product
 
 
 class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
@@ -129,3 +129,22 @@ class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
             Category
         """
         return await self._filter_category(name)
+
+    async def main_page_products(
+        self, page_number: int = 1, page_size: int = 10
+    ) -> list[Product]:
+        """Return products displayed on main page
+
+        Args:
+            page_number (int, optional): Page number to show products of. Defaults to 1.
+            page_size (int, optional): Number of products to display. Defaults to 10.
+
+        Returns:
+            list[Product]
+        """
+        url = f"{MAIN_PAGE_URL}?pageNumber={page_number}&pageSize={page_size}"
+
+        response = await self._make_request("get", url)
+        data = response["data"]
+
+        return [format_product(product) for product in data]

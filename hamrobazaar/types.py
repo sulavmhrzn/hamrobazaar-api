@@ -15,3 +15,15 @@ class ChildCategory:
     parent_cat_id: str
     name: str
     slug: str
+
+
+@dataclass
+class Product:
+    id: str
+    name: str
+    description: str
+    price: int
+    category_name: str
+    created_on: str
+    expiry_date: str
+    location: str
