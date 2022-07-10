@@ -5,9 +5,9 @@ import aiohttp
 from aiohttp.typedefs import JSONEncoder
 from slugify import slugify
 
-from .exceptions import CategoryNotFound
-from .types import Category, ChildCategory, Product
-from .utils import GET_ALL_CATEGORY_URL, MAIN_PAGE_URL, format_product
+from .exceptions import CategoryNotFound, ReachedLastPage
+from .types import Category, ChildCategory, Product, SortBy
+from .utils import GET_ALL_CATEGORY_URL, MAIN_PAGE_URL, SEARCH_URL, format_product
 
 
 class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
@@ -148,3 +148,97 @@ class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
         data = response["data"]
 
         return [format_product(product) for product in data]
+
+    async def _get_products(
+        self, category: Category, page_number: int = 1, page_size: int = 10
+    ) -> list[Product]:
+        category_id = category.id
+        url = f"{MAIN_PAGE_URL}?categoryId={category_id}pageNumber={page_number}&pageSize={page_size}"
+
+        response = await self._make_request("get", url)
+        total_pages = response["totalPages"]
+
+        if page_number > total_pages:
+            raise ReachedLastPage(
+                f"You have reached the last page. {page_number} exceeds {total_pages}"
+            )
+
+        data = response["data"]
+
+        return [format_product(product) for product in data]
+
+    async def get_products(
+        self, category: Category, page_number: int = 1, page_size: int = 10
+    ) -> list[Category]:
+        """Return products based on given category
+
+        Args:
+            category (Category): Category to return products from
+            page_number (int, optional): Page number to return products from. Defaults to 1.
+            page_size (int, optional): Number of products to display. Defaults to 10.
+
+        Raises:
+            ReachedLastPage: If reached last page.
+
+        Returns:
+            list[Category]
+        """
+        return await self._get_products(category, page_number, page_size)
+
+    async def _search_products(
+        self,
+        name: str,
+        page_number: int = 1,
+        page_size: int = 10,
+        price_from: int = 0,
+        price_to: int = 0,
+        is_price_negotiable: None | bool = None,
+        sort_by: SortBy = SortBy.A_TO_Z,
+        is_hb_select: bool = False,
+    ):
+        body = {
+            "pageNumber": page_number,
+            "pageSize": page_size,
+            "latitude": "0",
+            "longitude": "0",
+            "searchParams": {"searchValue": name, "SortBy": ""},
+            "filterParams": {
+                "condition": 0,
+                "priceFrom": price_from,
+                "priceTo": price_to,
+                "isPriceNegotiable": is_price_negotiable,
+                "category": "",
+                "categoryIds": "eb9c8147-07c0-4951-a962-381cdb400e37",
+                "brandIds": "",
+                "brand": "",
+            },
+            "sortParam": sort_by.value,
+            "isHBSelect": is_hb_select,
+            "deviceId": "e62ffe29-194a-4fd6-a606-486ab0a604f0",
+            "deviceSource": "web",
+        }
+        response = await self._make_request("post", url=SEARCH_URL, json=body)
+        data = response["data"]
+        return [format_product(product) for product in data]
+
+    async def search_products(
+        self,
+        name: str,
+        page_number: int = 1,
+        page_size: int = 10,
+        price_from: int = 0,
+        price_to: int = 0,
+        is_price_negotiable: None | bool = None,
+        sort_by: SortBy = SortBy.A_TO_Z,
+        is_hb_select: bool = False,
+    ):
+        return await self._search_products(
+            name,
+            page_number,
+            page_size,
+            price_from,
+            price_to,
+            is_price_negotiable,
+            sort_by,
+            is_hb_select,
+        )

@@ -5,3 +5,8 @@ class HamrobazaarException(Exception):
 class CategoryNotFound(HamrobazaarException):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+
+class ReachedLastPage(HamrobazaarException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
