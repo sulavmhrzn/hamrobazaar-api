@@ -30,6 +30,11 @@ class Product:
     location: str
 
 
+@dataclass
+class ProductDetail(Product):
+    specifications: list[dict]
+
+
 class SortBy(Enum):
     A_TO_Z = 1
     Z_TO_A = 2

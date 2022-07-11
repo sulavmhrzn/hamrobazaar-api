@@ -5,8 +5,8 @@ import aiohttp
 from aiohttp.typedefs import JSONEncoder
 from slugify import slugify
 
-from .exceptions import CategoryNotFound, ReachedLastPage
-from .types import Category, ChildCategory, Product, SortBy
+from .exceptions import CategoryNotFound, ProductNotFound, ReachedLastPage
+from .types import Category, ChildCategory, Product, ProductDetail, SortBy
 from .utils import GET_ALL_CATEGORY_URL, MAIN_PAGE_URL, SEARCH_URL, format_product
 
 
@@ -242,3 +242,37 @@ class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
             sort_by,
             is_hb_select,
         )
+
+    async def _get_product_detail(self, product_id: str) -> ProductDetail:
+        url = f"{MAIN_PAGE_URL}/{product_id}"
+
+        response = await self._make_request("get", url)
+        errors = response.get("errors", None)
+        
+        if errors:
+            raise ProductNotFound("Product with that id was not found.")
+
+        if response["status"]["message"][0] == "Product not found!":
+            raise ProductNotFound("Product with that id was not found.")
+
+        product = response["data"]
+        specs_list = []
+
+        for specs in product["productAttributeValues"]:
+            specs_list.append({specs["attributeName"]: specs["value"]})
+
+        return format_product(product, specs_list)
+
+    async def get_product_detail(self, product_id: str) -> ProductDetail:
+        """Return product detail for a specific product id
+
+        Args:
+            product_id (str): Product id to get details for
+
+        Raises:
+            ProductNotFound: When no product with given id is found
+
+        Returns:
+            ProductDetail
+        """
+        return await self._get_product_detail(product_id)

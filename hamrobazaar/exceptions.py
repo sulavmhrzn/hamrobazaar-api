@@ -10,3 +10,8 @@ class CategoryNotFound(HamrobazaarException):
 class ReachedLastPage(HamrobazaarException):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+
+class ProductNotFound(HamrobazaarException):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
