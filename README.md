@@ -1,6 +1,6 @@
 # Hamrobazaar-API
 
-An unofficial python wrapper around [hamrobazaar.com]() API
+An unofficial python wrapper around [hamrobazaar.com](https://hamrobazaar.com/) API
 
 ## Install
 ```bash
@@ -17,7 +17,7 @@ async def main():
     with HamrobazaarClient(api_key) as client:
 
         # Get product detail with its id
-        product = await client.get_product_detai("4ace7c2501964de481d4e0cf09121724")        
+        product = await client.get_product_detail("4ace7c2501964de481d4e0cf09121724")        
         
         print(product.name)
         print(product.price)
@@ -25,3 +25,6 @@ async def main():
     
 asyncio.run(main())
 ```
+
+## 🚧 Work In Progress. 🚧 
+ 
