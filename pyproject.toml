@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hamrobazaar-api"
+name = "hamrobazaar"
 version = "0.1.0"
 description = ""
 authors = ["Sulav Maharjan <sulavmaharjan63@gmail.com>"]
@@ -8,6 +8,7 @@ authors = ["Sulav Maharjan <sulavmaharjan63@gmail.com>"]
 python = "^3.10"
 aiohttp = {extras = ["speedups"], version = "^3.8.1"}
 python-slugify = "^6.1.2"
+Sphinx = "^5.0.2"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.10.1"

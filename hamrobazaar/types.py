@@ -4,6 +4,7 @@ from enum import Enum
 
 @dataclass
 class Category:
+    """Represents a category"""
     id: str
     name: str
     slug: str
@@ -12,6 +13,7 @@ class Category:
 
 @dataclass
 class ChildCategory:
+    """Represents a child category inside Category"""
     cat_id: str
     parent_cat_id: str
     name: str
@@ -20,6 +22,7 @@ class ChildCategory:
 
 @dataclass
 class Product:
+    """Represent a product"""
     id: str
     name: str
     description: str
@@ -32,10 +35,12 @@ class Product:
 
 @dataclass
 class ProductDetail(Product):
+    """Represent a product with extra attributes"""
     specifications: list[dict]
 
 
 class SortBy(Enum):
+    """Sort crieteria for sort param"""
     A_TO_Z = 1
     Z_TO_A = 2
     LOW_TO_HIGH = 3
