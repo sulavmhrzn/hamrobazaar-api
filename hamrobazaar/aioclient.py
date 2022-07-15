@@ -143,8 +143,15 @@ class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
             list[Product]
         """
         url = f"{MAIN_PAGE_URL}?pageNumber={page_number}&pageSize={page_size}"
-
         response = await self._make_request("get", url)
+
+        total_pages = response["totalPages"]
+
+        if page_number > total_pages:
+            raise ReachedLastPage(
+                f"You have reached the last page. {page_number} exceeds {total_pages}"
+            )
+
         data = response["data"]
 
         return [format_product(product) for product in data]
@@ -248,7 +255,7 @@ class HamrobazaarClient(contextlib.AbstractAsyncContextManager):
 
         response = await self._make_request("get", url)
         errors = response.get("errors", None)
-        
+
         if errors:
             raise ProductNotFound("Product with that id was not found.")
 
